@@ -28,3 +28,6 @@ build/
 
 # 測試輸出
 coverage/
+
+# 暫存檔案
+.temp/
