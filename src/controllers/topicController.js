@@ -3,7 +3,7 @@ const topicService = require('../services/topicService');
 // 獲取所有話題
 exports.getAllTopics = async (req, res) => {
   try {
-    const topics = await topicService.getAllTopics();
+    const topics = await topicService.getAllTopics(req.query);
     res.json({ status: 'success', data: topics });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });

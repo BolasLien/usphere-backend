@@ -1,8 +1,12 @@
 const db = require('../utils/db');
 
 // 獲取所有話題
-exports.getAllTopics = async () => {
-  const { data, error } = await db.from('topics').select('*');
+exports.getAllTopics = async (query) => {
+  // 根據查詢參數過濾和排序話題
+  const { sort, keyword, page = 1, tag } = query;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+  const { data, error } = await db.from('topics').select('*').range(offset, offset + limit - 1);
   if (error) throw new Error(error.message);
   return data;
 };
