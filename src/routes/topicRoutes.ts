@@ -1,5 +1,5 @@
-const express = require('express');
-const topicController = require('../controllers/topicController');
+import express from 'express';
+import topicController from '../controllers/topicController';
 const router = express.Router();
 
 router.get('/', topicController.getAllTopics);
@@ -8,4 +8,4 @@ router.post('/', topicController.createTopic);
 router.put('/:id', topicController.updateTopic);
 router.delete('/:id', topicController.deleteTopic);
 
-module.exports = router;
+export default router;

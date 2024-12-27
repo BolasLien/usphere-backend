@@ -1,9 +1,23 @@
-const db = require("../utils/db");
-const logger = require("../utils/logger");
+import db from "../utils/db";
+import logger from "../utils/logger";
+
+interface Query {
+  sort?: string;
+  keyword?: string;
+  page?: number;
+  tag?: string;
+}
+
+interface Topic {
+  id?: number;
+  title: string;
+  content: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
 // 獲取所有話題
-exports.getAllTopics = async (query) => {
-  // 根據查詢參數過濾和排序話題
+export const getAllTopics = async (query: Query): Promise<Topic[]> => {
   const { sort, keyword, page = 1, tag } = query;
   const limit = 10;
   const offset = (page - 1) * limit;
@@ -16,7 +30,7 @@ exports.getAllTopics = async (query) => {
 };
 
 // 獲取單個話題
-exports.getTopicById = async (id) => {
+export const getTopicById = async (id: number): Promise<Topic> => {
   const { data, error } = await db
     .from("topics")
     .select("*")
@@ -27,14 +41,14 @@ exports.getTopicById = async (id) => {
 };
 
 // 創建新話題
-exports.createTopic = async (topic) => {
+export const createTopic = async (topic: Topic): Promise<Topic> => {
   const { data, error } = await db.from("topics").insert(topic).single();
   if (error) throw new Error(error.message);
   return data;
 };
 
 // 更新話題
-exports.updateTopic = async (id, topic) => {
+export const updateTopic = async (id: number, topic: Topic): Promise<Topic> => {
   const { data, error } = await db
     .from("topics")
     .update(topic)
@@ -45,7 +59,7 @@ exports.updateTopic = async (id, topic) => {
 };
 
 // 刪除話題
-exports.deleteTopic = async (id) => {
+export const deleteTopic = async (id: number): Promise<Topic> => {
   const { data, error } = await db
     .from("topics")
     .delete()
