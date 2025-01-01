@@ -1,17 +1,42 @@
 const db = require("../utils/db");
-const logger = require("../utils/logger");
 
 // 獲取所有話題
 exports.getAllTopics = async (query) => {
-  // 根據查詢參數過濾和排序話題
-  const { sort, keyword, page = 1, tag } = query;
-  const limit = 10;
+  const { sort = "newest", keyword, page = 1, limit = 10, tags } = query;
   const offset = (page - 1) * limit;
-  const { data, error } = await db
-    .from("topics")
-    .select("*")
-    .range(offset, offset + limit - 1);
+
+  // 構建查詢
+  let dbQuery = db.from("topics").select("*");
+
+  // 關鍵字過濾
+  if (keyword) {
+    dbQuery = dbQuery.or(
+      `title.ilike.%${keyword}%,description.ilike.%${keyword}%,content.ilike.%${keyword}%`
+    );
+  }
+
+  // 標籤篩選
+  if (tags) {
+    dbQuery = dbQuery.contains("tags", [tags]); // 假設 tags 是 array 格式
+  }
+
+  // 排序
+  if (sort === "newest") {
+    dbQuery = dbQuery.order("created_at", { ascending: false });
+  } else if (sort === "oldest") {
+    dbQuery = dbQuery.order("created_at", { ascending: true });
+  } else if (sort === "popular") {
+    dbQuery = dbQuery.order("likes", { ascending: false });
+  }
+
+  // 分頁處理
+  dbQuery = dbQuery.range(offset, offset + limit - 1);
+
+  // 執行查詢
+  const { data, error } = await dbQuery;
+
   if (error) throw new Error(error.message);
+
   return data;
 };
 
