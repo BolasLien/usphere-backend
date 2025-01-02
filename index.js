@@ -1,10 +1,12 @@
 const express = require('express');
+const cors = require('cors');
 const userRoutes = require('./src/routes/userRoutes');
 const topicRoutes = require('./src/routes/topicRoutes');
 const logger = require('./src/utils/logger');
 const app = express();
 const port = 3000;
 
+app.use(cors()); // 使用 cors 中介軟體
 app.use(express.json());
 app.use('/users', userRoutes);
 app.use('/topics', topicRoutes);
