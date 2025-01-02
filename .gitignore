@@ -31,3 +31,5 @@ coverage/
 
 # 暫存檔案
 .temp/
+
+.vercel
