@@ -53,7 +53,19 @@ exports.getTopicById = async (id) => {
 
 // 創建新話題
 exports.createTopic = async (topic) => {
-  const { data, error } = await db.from("topics").insert(topic).single();
+  // TODO 暫時先給假的資料
+  topic.author = "王小艾";
+  topic.author_pic = "https://randomuser.me/api/portraits/women/21.jpg";
+  topic.description = topic.content.substring(0, 30) + "...";
+  topic.likes = 0;
+  topic.comments = 0;
+  topic.bookmarks = 0;
+
+  const { data, error } = await db
+    .from("topics")
+    .insert(topic)
+    .select("id") // 返回 id 讓前端使用
+    .single();
   if (error) throw new Error(error.message);
   return data;
 };
