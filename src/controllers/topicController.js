@@ -58,11 +58,14 @@ exports.updateTopic = async (req, res) => {
 exports.deleteTopic = async (req, res) => {
   try {
     const deletedTopic = await topicService.deleteTopic(req.params.id);
+
     if (!deletedTopic) {
-      return res
-        .status(404)
-        .json({ status: "error", message: "Topic not found" });
+      return res.status(404).json({
+        status: "error",
+        message: "Topic has already been deleted or does not exist",
+      });
     }
+
     res.json({ status: "success", message: "Topic deleted successfully" });
   } catch (error) {
     res.status(500).json({ status: "error", message: error.message });

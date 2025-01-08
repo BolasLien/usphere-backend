@@ -90,9 +90,17 @@ exports.updateTopic = async (id, topic) => {
 exports.deleteTopic = async (id) => {
   const { data, error } = await db
     .from("topics")
-    .delete()
+    .update({ is_deleted: true, deleted_at: new Date().toISOString() })
+    .eq("is_deleted", false)
     .eq("id", id)
-    .single();
-  if (error) throw new Error(error.message);
+    .select(); // 成功更新會返回該資料，失敗的話則是回空陣列
+
+  if (error) {
+    console.error("Error delete topic:", error);
+    throw new Error("Failed to delete topic: " + error.message);
+  }
+
+  if (!data || data.length === 0) return null;
+
   return data;
 };
