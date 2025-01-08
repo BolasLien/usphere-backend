@@ -72,10 +72,15 @@ exports.createTopic = async (topic) => {
 
 // 更新話題
 exports.updateTopic = async (id, topic) => {
+  if (topic.content) {
+    topic.description = topic.content.substring(0, 30) + "...";
+  }
+
   const { data, error } = await db
     .from("topics")
     .update(topic)
     .eq("id", id)
+    .select()
     .single();
   if (error) throw new Error(error.message);
   return data || {};
