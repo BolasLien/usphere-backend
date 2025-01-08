@@ -7,5 +7,6 @@ router.get('/:id', topicController.getTopicById);
 router.post('/', topicController.createTopic);
 router.put('/:id', topicController.updateTopic);
 router.delete('/:id', topicController.deleteTopic);
+router.post('/:id/restore', topicController.restoreTopic);
 
 module.exports = router;

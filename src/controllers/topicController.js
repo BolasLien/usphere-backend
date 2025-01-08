@@ -71,3 +71,28 @@ exports.deleteTopic = async (req, res) => {
     res.status(500).json({ status: "error", message: error.message });
   }
 };
+
+// 恢復話題
+exports.restoreTopic = async (req, res) => {
+  try {
+    const restoredTopic = await topicService.restoreTopic(req.params.id);
+
+    if (!restoredTopic) {
+      return res.status(404).json({
+        status: "error",
+        message: "Topic not found or not deleted",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Topic restored successfully",
+      data: restoredTopic,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: error.message || "An unexpected error occurred",
+    });
+  }
+};

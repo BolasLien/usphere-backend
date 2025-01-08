@@ -104,3 +104,22 @@ exports.deleteTopic = async (id) => {
 
   return data;
 };
+
+// 恢復話題
+exports.restoreTopic = async (id) => {
+  const { data, error } = await db
+    .from("topics")
+    .update({ is_deleted: false, deleted_at: null })
+    .eq("is_deleted", true) // 確保只恢復已刪除的資料
+    .eq("id", id)
+    .select(); // 返回更新的資料
+
+  if (error) {
+    console.error("Error restoring topic:", error);
+    throw new Error("Failed to restore topic: " + error.message);
+  }
+
+  if (!data || data.length === 0) return null;
+
+  return data; // 返回恢復的資料
+};
