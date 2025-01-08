@@ -64,7 +64,7 @@ exports.createTopic = async (topic) => {
   const { data, error } = await db
     .from("topics")
     .insert(topic)
-    .select("id") // 返回 id 讓前端使用
+    .select() // 返回全部資料讓前端使用
     .single();
   if (error) throw new Error(error.message);
   return data;
