@@ -3,7 +3,7 @@ const db = require("../utils/db");
 // 獲取所有話題
 exports.getAllTopics = async (query) => {
   const { sort = "newest", keyword, page = 1, limit = 10, tags } = query;
-  const offset = (page - 1) * limit;
+  const offset = (parseInt(page) - 1) * parseInt(limit);
 
   // 構建查詢
   let dbQuery = db.from("topics").select("*");
@@ -30,7 +30,7 @@ exports.getAllTopics = async (query) => {
   }
 
   // 分頁處理
-  dbQuery = dbQuery.range(offset, offset + limit - 1);
+  dbQuery = dbQuery.range(offset, offset + parseInt(limit) - 1);
 
   // 執行查詢
   const { data, error } = await dbQuery;
