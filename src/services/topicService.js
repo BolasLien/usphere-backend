@@ -1,7 +1,7 @@
 const db = require("../utils/db");
 
 // 虛回傳的欄位
-const TOPIC_FIELDS = "id,title,description,content,author,likes,comments,created_at,tags,bookmarks,author_pic";
+const TOPIC_FIELDS = "id,title,content,author,likes,comments,created_at,tags,bookmarks,author_pic";
 
 
 // 獲取所有話題
@@ -18,7 +18,7 @@ exports.getAllTopics = async (query) => {
   // 關鍵字過濾
   if (keyword) {
     dbQuery = dbQuery.or(
-      `title.ilike.%${keyword}%,description.ilike.%${keyword}%,content.ilike.%${keyword}%`
+      `title.ilike.%${keyword}%,content.ilike.%${keyword}%`
     );
   }
 
