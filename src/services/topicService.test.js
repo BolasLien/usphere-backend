@@ -9,6 +9,7 @@ describe("Topic Service", () => {
       const mockData = [{ id: 1, title: "Test Topic" }];
       db.from.mockReturnValue({
         select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
         range: jest.fn().mockReturnValue({ data: mockData, error: null }),
       });
@@ -21,7 +22,8 @@ describe("Topic Service", () => {
       const mockData = [{ id: 1, title: "Test Topic" }];
       db.from.mockReturnValue({
         select: jest.fn().mockReturnThis(),
-        ilike: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
         range: jest.fn().mockReturnValue({ data: mockData, error: null }),
       });
@@ -34,12 +36,13 @@ describe("Topic Service", () => {
       const mockData = [{ id: 1, title: "Test Topic" }];
       db.from.mockReturnValue({
         select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         contains: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
         range: jest.fn().mockReturnValue({ data: mockData, error: null }),
       });
 
-      const result = await topicService.getAllTopics({ tag: "tag1" });
+      const result = await topicService.getAllTopics({ tags: "tag1" });
       expect(result).toEqual(mockData);
     });
 
@@ -47,6 +50,7 @@ describe("Topic Service", () => {
       const mockData = [{ id: 1, title: "Test Topic" }];
       db.from.mockReturnValue({
         select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
         range: jest.fn().mockReturnValue({ data: mockData, error: null }),
       });
@@ -59,6 +63,7 @@ describe("Topic Service", () => {
       const mockData = [{ id: 1, title: "Test Topic" }];
       db.from.mockReturnValue({
         select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
         range: jest.fn().mockReturnValue({ data: mockData, error: null }),
       });
@@ -71,6 +76,7 @@ describe("Topic Service", () => {
       const mockData = [{ id: 1, title: "Test Topic" }];
       db.from.mockReturnValue({
         select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
         range: jest.fn().mockReturnValue({ data: mockData, error: null }),
       });
@@ -82,6 +88,7 @@ describe("Topic Service", () => {
     it("should throw an error if db query fails", async () => {
       db.from.mockReturnValue({
         select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
         range: jest
           .fn()
@@ -101,12 +108,13 @@ describe("Topic Service", () => {
       ];
       db.from.mockReturnValue({
         select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         contains: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
         range: jest.fn().mockReturnValue({ data: mockData, error: null }),
       });
 
-      const result = await topicService.getAllTopics({ tag: ["tag1", "tag2"] });
+      const result = await topicService.getAllTopics({ tags: ["tag1", "tag2"] });
       expect(result).toEqual(mockData);
     });
 
@@ -114,6 +122,7 @@ describe("Topic Service", () => {
       const mockData = [{ id: 1, title: "Test Topic" }];
       db.from.mockReturnValue({
         select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
         range: jest.fn().mockReturnValue({ data: mockData, error: null }),
       });
@@ -126,6 +135,7 @@ describe("Topic Service", () => {
       const mockData = [{ id: 1, title: "Test Topic" }];
       db.from.mockReturnValue({
         select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
         range: jest.fn().mockReturnValue({ data: mockData, error: null }),
       });
@@ -138,7 +148,8 @@ describe("Topic Service", () => {
       const mockData = [{ id: 1, title: "Test Topic" }];
       db.from.mockReturnValue({
         select: jest.fn().mockReturnThis(),
-        ilike: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        or: jest.fn().mockReturnThis(),
         order: jest.fn().mockReturnThis(),
         range: jest.fn().mockReturnValue({ data: mockData, error: null }),
       });
@@ -147,18 +158,98 @@ describe("Topic Service", () => {
       expect(result).toEqual(mockData);
     });
   });
+
+  // 刪除話題
+  describe("deleteTopic", () => {
+    it("should delete topic with valid id", async () => {
+      const mockData = [{ id: 1, title: "Test Topic" }];
+      db.from.mockReturnValue({
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnValue({ data: mockData, error: null }),
+      });
+
+      const result = await topicService.deleteTopic(1);
+      expect(result).toEqual(mockData);
+    });
+
+    it("should return null for non-existing id", async () => {
+      db.from.mockReturnValue({
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnValue({ data: [], error: null }),
+      });
+
+      const result = await topicService.deleteTopic(999);
+      expect(result).toBeNull();
+    });
+
+    it("should return null for already deleted topic", async () => {
+      db.from.mockReturnValue({
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnValue({ data: [], error: null }),
+      });
+
+      const result = await topicService.deleteTopic(1);
+      expect(result).toBeNull();
+    });
+
+    it("should throw an error if db query fails", async () => {
+      db.from.mockReturnValue({
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnValue({ data: null, error: { message: "Error" } }),
+      });
+
+      await expect(topicService.deleteTopic(1)).rejects.toThrow("Failed to delete topic: Error");
+    });
+  });
+
+  // 恢復話題
+  describe("restoreTopic", () => {
+    it("should restore topic with valid id", async () => {
+      const mockData = [{ id: 1, title: "Test Topic" }];
+      db.from.mockReturnValue({
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnValue({ data: mockData, error: null }),
+      });
+
+      const result = await topicService.restoreTopic(1);
+      expect(result).toEqual(mockData);
+    });
+
+    it("should return null for non-deleted topic", async () => {
+      db.from.mockReturnValue({
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnValue({ data: [], error: null }),
+      });
+
+      const result = await topicService.restoreTopic(1);
+      expect(result).toBeNull();
+    });
+
+    it("should return null for invalid topic id", async () => {
+      db.from.mockReturnValue({
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnValue({ data: [], error: null }),
+      });
+
+      const result = await topicService.restoreTopic(999);
+      expect(result).toBeNull();
+    });
+
+    it("should throw an error if db query fails", async () => {
+      db.from.mockReturnValue({
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnValue({ data: null, error: { message: "Error" } }),
+      });
+
+      await expect(topicService.restoreTopic(1)).rejects.toThrow("Failed to restore topic: Error");
+    });
+  });
 });
-
-// TODO 刪除話題
-// 提供不存在的 id。
-// 提供已刪除的 id。
-// 提供有效的 id 並成功刪除。
-// 不提供 id。
-
-
-// TODO 恢復話題
-// 測試案例
-// 成功恢復話題：// 發送 POST /topics/123/restore，應返回 200 和成功訊息。
-// 話題未刪除：// 發送 POST /topics/123/restore，應返回 404，表示話題未被刪除。
-// 無效的話題 ID：// 發送 POST /topics/999/restore（不存在的 ID），應返回 404。
-// 伺服器錯誤：// 模擬資料庫錯誤，應返回 500 和適當的錯誤訊息。
