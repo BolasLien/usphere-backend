@@ -1,12 +1,19 @@
 const db = require("../utils/db");
 
+// 虛回傳的欄位
+const TOPIC_FIELDS = "id,title,description,content,author,likes,comments,created_at,tags,bookmarks,author_pic";
+
+
 // 獲取所有話題
 exports.getAllTopics = async (query) => {
   const { sort = "newest", keyword, page = 1, limit = 10, tags } = query;
   const offset = (parseInt(page) - 1) * parseInt(limit);
 
   // 構建查詢
-  let dbQuery = db.from("topics").select("*");
+  let dbQuery = db
+    .from("topics")
+    .select(TOPIC_FIELDS)
+    .eq("is_deleted", false);
 
   // 關鍵字過濾
   if (keyword) {
@@ -44,10 +51,11 @@ exports.getAllTopics = async (query) => {
 exports.getTopicById = async (id) => {
   const { data, error } = await db
     .from("topics")
-    .select("*")
+    .select(TOPIC_FIELDS)
     .eq("id", id)
-    .single();
+    .eq("is_deleted", false)
   if (error) throw new Error(error.message);
+  if (!data || data.length === 0) return null;
   return data;
 };
 
@@ -64,7 +72,7 @@ exports.createTopic = async (topic) => {
   const { data, error } = await db
     .from("topics")
     .insert(topic)
-    .select() // 返回全部資料讓前端使用
+    .select(TOPIC_FIELDS) // 返回全部資料讓前端使用
     .single();
   if (error) throw new Error(error.message);
   return data;
@@ -80,7 +88,7 @@ exports.updateTopic = async (id, topic) => {
     .from("topics")
     .update(topic)
     .eq("id", id)
-    .select()
+    .select(TOPIC_FIELDS)
     .single();
   if (error) throw new Error(error.message);
   return data || {};
@@ -93,7 +101,7 @@ exports.deleteTopic = async (id) => {
     .update({ is_deleted: true, deleted_at: new Date().toISOString() })
     .eq("is_deleted", false)
     .eq("id", id)
-    .select(); // 成功更新會返回該資料，失敗的話則是回空陣列
+    .select(TOPIC_FIELDS); // 成功更新會返回該資料，失敗的話則是回空陣列
 
   if (error) {
     console.error("Error delete topic:", error);
@@ -112,7 +120,7 @@ exports.restoreTopic = async (id) => {
     .update({ is_deleted: false, deleted_at: null })
     .eq("is_deleted", true) // 確保只恢復已刪除的資料
     .eq("id", id)
-    .select(); // 返回更新的資料
+    .select(TOPIC_FIELDS); // 返回更新的資料
 
   if (error) {
     console.error("Error restoring topic:", error);
