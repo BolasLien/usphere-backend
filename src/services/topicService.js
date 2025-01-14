@@ -54,6 +54,7 @@ exports.getTopicById = async (id) => {
     .select(TOPIC_FIELDS)
     .eq("id", id)
     .eq("is_deleted", false)
+    .single();
   if (error) throw new Error(error.message);
   if (!data || data.length === 0) return null;
   return data;
