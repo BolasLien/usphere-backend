@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const userRoutes = require("./src/routes/userRoutes");
-const topicRoutes = require("./src/routes/topicRoutes");
+const routes = require("./src/routes");
 const logger = require("./src/utils/logger");
 const app = express();
 const port = 3000;
@@ -27,8 +26,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions)); // 使用 cors 中介軟體
 app.use(express.json());
-app.use("/users", userRoutes);
-app.use("/topics", topicRoutes);
+app.use(routes);
 
 logger.info("Express app 已經啟動");
 // ...existing code...
