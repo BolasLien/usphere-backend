@@ -1,8 +1,18 @@
 const db = require("../utils/db");
 
-// 虛回傳的欄位
-const TOPIC_FIELDS = "id,title,content,author,likes,comments,created_at,tags,bookmarks,author_pic";
+// 回傳的欄位
+const TOPIC_FIELDS =
+  "id,title,content,likes,comments,created_at,tags,bookmarks,users:users (display_name,profile_pic_url)";
 
+// 格式化話題資料
+const formatTopic = (topic) => {
+  return {
+    ...topic,
+    author: topic.users.display_name,
+    author_pic: topic.users.profile_pic_url,
+    users: undefined, // 移除 users 欄位
+  };
+};
 
 // 獲取所有話題
 exports.getAllTopics = async (query) => {
@@ -10,16 +20,11 @@ exports.getAllTopics = async (query) => {
   const offset = (parseInt(page) - 1) * parseInt(limit);
 
   // 構建查詢
-  let dbQuery = db
-    .from("topics")
-    .select(TOPIC_FIELDS)
-    .eq("is_deleted", false);
+  let dbQuery = db.from("topics").select(TOPIC_FIELDS).eq("is_deleted", false);
 
   // 關鍵字過濾
   if (keyword) {
-    dbQuery = dbQuery.or(
-      `title.ilike.%${keyword}%,content.ilike.%${keyword}%`
-    );
+    dbQuery = dbQuery.or(`title.ilike.%${keyword}%,content.ilike.%${keyword}%`);
   }
 
   // 標籤篩選
@@ -44,7 +49,7 @@ exports.getAllTopics = async (query) => {
 
   if (error) throw new Error(error.message);
 
-  return data;
+  return data.map(formatTopic);
 };
 
 // 獲取單個話題
@@ -55,17 +60,17 @@ exports.getTopicById = async (id) => {
     .eq("id", id)
     .eq("is_deleted", false)
     .single();
+
   if (error) throw new Error(error.message);
-  if (!data || data.length === 0) return null;
-  return data;
+  if (!data) return null;
+
+  return formatTopic(data);
 };
 
 // 創建新話題
 exports.createTopic = async (topic) => {
   // TODO 暫時先給假的資料
-  topic.author = "王小艾";
-  topic.author_pic = "https://randomuser.me/api/portraits/women/21.jpg";
-  topic.description = topic.content.substring(0, 30) + "...";
+  topic.user_id = "78223638-d195-44ae-8441-76b364eec8e2";
   topic.likes = 0;
   topic.comments = 0;
   topic.bookmarks = 0;
@@ -76,15 +81,12 @@ exports.createTopic = async (topic) => {
     .select(TOPIC_FIELDS) // 返回全部資料讓前端使用
     .single();
   if (error) throw new Error(error.message);
-  return data;
+
+  return formatTopic(data);
 };
 
 // 更新話題
 exports.updateTopic = async (id, topic) => {
-  if (topic.content) {
-    topic.description = topic.content.substring(0, 30) + "...";
-  }
-
   const { data, error } = await db
     .from("topics")
     .update(topic)
@@ -92,7 +94,8 @@ exports.updateTopic = async (id, topic) => {
     .select(TOPIC_FIELDS)
     .single();
   if (error) throw new Error(error.message);
-  return data || {};
+
+  return formatTopic(data) || {};
 };
 
 // 刪除話題
@@ -111,7 +114,7 @@ exports.deleteTopic = async (id) => {
 
   if (!data || data.length === 0) return null;
 
-  return data;
+  return data.map(formatTopic);
 };
 
 // 恢復話題
@@ -130,5 +133,5 @@ exports.restoreTopic = async (id) => {
 
   if (!data || data.length === 0) return null;
 
-  return data; // 返回恢復的資料
+  return data.map(formatTopic); // 返回恢復的資料
 };
