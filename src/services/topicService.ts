@@ -1,11 +1,38 @@
-const db = require("../utils/db");
+import db from "../utils/db";
+
+interface Topic {
+  id: string;
+  title: string;
+  content: string;
+  likes: number;
+  comments: number;
+  created_at: string;
+  tags: string[];
+  bookmarks: number;
+  users: {
+    display_name: string;
+    profile_pic_url: string;
+  };
+  author?: string;
+  author_pic?: string;
+  is_deleted?: boolean;
+  deleted_at?: string | null;
+}
+
+interface Query {
+  sort?: string;
+  keyword?: string;
+  page?: number;
+  limit?: number;
+  tags?: string;
+}
 
 // 回傳的欄位
 const TOPIC_FIELDS =
   "id,title,content,likes,comments,created_at,tags,bookmarks,users:users (display_name,profile_pic_url)";
 
 // 格式化話題資料
-const formatTopic = (topic) => {
+const formatTopic = (topic: Topic): Topic => {
   return {
     ...topic,
     author: topic.users.display_name,
@@ -15,10 +42,10 @@ const formatTopic = (topic) => {
 };
 
 // 獲取所有話題
-exports.getAllTopics = async (query) => {
+export const getAllTopics = async (query: Query): Promise<Topic[]> => {
   const { sort = "newest", keyword, page = 1, limit = 10, tags } = query;
-  const offset = (parseInt(page) - 1) * parseInt(limit);
-
+  const offset = (parseInt(page.toString()) - 1) * parseInt(limit.toString());
+  
   // 構建查詢
   let dbQuery = db.from("topics").select(TOPIC_FIELDS).eq("is_deleted", false);
 
@@ -29,7 +56,7 @@ exports.getAllTopics = async (query) => {
 
   // 標籤篩選
   if (tags) {
-    dbQuery = dbQuery.contains("tags", [tags]); // 假設 tags 是 array 格式
+    dbQuery = dbQuery.contains("tags", [tags]);
   }
 
   // 排序
@@ -42,7 +69,7 @@ exports.getAllTopics = async (query) => {
   }
 
   // 分頁處理
-  dbQuery = dbQuery.range(offset, offset + parseInt(limit) - 1);
+  dbQuery = dbQuery.range(offset, offset + parseInt(limit.toString()) - 1);
 
   // 執行查詢
   const { data, error } = await dbQuery;
@@ -53,7 +80,7 @@ exports.getAllTopics = async (query) => {
 };
 
 // 獲取單個話題
-exports.getTopicById = async (id) => {
+export const getTopicById = async (id: string): Promise<Topic | null> => {
   const { data, error } = await db
     .from("topics")
     .select(TOPIC_FIELDS)
@@ -68,7 +95,7 @@ exports.getTopicById = async (id) => {
 };
 
 // 創建新話題
-exports.createTopic = async (topic) => {
+export const createTopic = async (topic: Topic): Promise<Topic> => {
   // TODO 暫時先給假的資料
   topic.user_id = "78223638-d195-44ae-8441-76b364eec8e2";
   topic.likes = 0;
@@ -86,7 +113,7 @@ exports.createTopic = async (topic) => {
 };
 
 // 更新話題
-exports.updateTopic = async (id, topic) => {
+export const updateTopic = async (id: string, topic: Partial<Topic>): Promise<Topic> => {
   const { data, error } = await db
     .from("topics")
     .update(topic)
@@ -99,7 +126,7 @@ exports.updateTopic = async (id, topic) => {
 };
 
 // 刪除話題
-exports.deleteTopic = async (id) => {
+export const deleteTopic = async (id: string): Promise<Topic | null> => {
   const { data, error } = await db
     .from("topics")
     .update({ is_deleted: true, deleted_at: new Date().toISOString() })
@@ -118,7 +145,7 @@ exports.deleteTopic = async (id) => {
 };
 
 // 恢復話題
-exports.restoreTopic = async (id) => {
+export const restoreTopic = async (id: string): Promise<Topic | null> => {
   const { data, error } = await db
     .from("topics")
     .update({ is_deleted: false, deleted_at: null })

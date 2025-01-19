@@ -1,7 +1,32 @@
-const db = require("../utils/db");
+import db from "../utils/db";
+
+interface Comment {
+  id: string;
+  content: string;
+  created_at: string;
+  likes: number;
+  user_name: string;
+  user_pic: string;
+}
+
+interface NewComment {
+  content: string;
+  topic_id: string;
+  likes: number;
+  user_id: string;
+}
+
+interface User {
+  display_name: string;
+  profile_pic_url: string;
+}
+
+interface CommentWithUser extends Comment {
+  users: User;
+}
 
 // 獲取指定話題下的所有留言
-exports.getCommentsByTopicId = async (topicId) => {
+export const getCommentsByTopicId = async (topicId: string): Promise<Comment[]> => {
   const { data, error } = await db
     .from("comments")
     .select("*, users(display_name,profile_pic_url)")
@@ -10,7 +35,7 @@ exports.getCommentsByTopicId = async (topicId) => {
 
   if (error) throw new Error(error.message);
 
-  const comments = data.map((comment) => {
+  const comments = (data as CommentWithUser[]).map((comment) => {
     comment.user_name = comment.users ? comment.users.display_name : "未知用戶";
     comment.user_pic = comment.users ? comment.users.profile_pic_url : "";
     const { user_id, users, topic_id, created_at, ...data } = comment;
@@ -21,7 +46,7 @@ exports.getCommentsByTopicId = async (topicId) => {
 };
 
 // 在指定話題下發表新留言
-exports.createComment = async (topicId, comment) => {
+export const createComment = async (topicId: string, comment: NewComment): Promise<Partial<Comment>> => {
   comment.topic_id = topicId;
   comment.likes = 0;
 
@@ -39,7 +64,7 @@ exports.createComment = async (topicId, comment) => {
 };
 
 // TODO 對指定留言進行按讚操作，目前只是增加 likes 數量
-exports.likeComment = async (commentId) => {
+export const likeComment = async (commentId: string): Promise<Comment> => {
   const { data, error } = await db
     .from("comments")
     .update({ likes: db.raw("likes + 1") })

@@ -1,17 +1,18 @@
-const topicService = require("../services/topicService");
+import { Request, Response } from "express";
+import topicService from "../services/topicService";
 
 // 獲取所有話題
-exports.getAllTopics = async (req, res) => {
+export const getAllTopics = async (req: Request, res: Response): Promise<void> => {
   try {
     const topics = await topicService.getAllTopics(req.query);
     res.json({ status: "success", data: topics });
   } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
+    res.status(500).json({ status: "error", message: (error as Error).message });
   }
 };
 
 // 獲取單個話題
-exports.getTopicById = async (req, res) => {
+export const getTopicById = async (req: Request, res: Response): Promise<void> => {
   try {
     const topic = await topicService.getTopicById(req.params.id);
     if (!topic) {
@@ -21,22 +22,22 @@ exports.getTopicById = async (req, res) => {
     }
     res.json({ status: "success", data: topic });
   } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
+    res.status(500).json({ status: "error", message: (error as Error).message });
   }
 };
 
 // 創建新話題
-exports.createTopic = async (req, res) => {
+export const createTopic = async (req: Request, res: Response): Promise<void> => {
   try {
     const newTopic = await topicService.createTopic(req.body);
     res.status(201).json({ status: "success", data: newTopic });
   } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
+    res.status(500).json({ status: "error", message: (error as Error).message });
   }
 };
 
 // 更新話題
-exports.updateTopic = async (req, res) => {
+export const updateTopic = async (req: Request, res: Response): Promise<void> => {
   try {
     const updatedTopic = await topicService.updateTopic(
       req.params.id,
@@ -50,12 +51,12 @@ exports.updateTopic = async (req, res) => {
     }
     res.json({ status: "success", data: updatedTopic });
   } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
+    res.status(500).json({ status: "error", message: (error as Error).message });
   }
 };
 
 // 刪除話題
-exports.deleteTopic = async (req, res) => {
+export const deleteTopic = async (req: Request, res: Response): Promise<void> => {
   try {
     const deletedTopic = await topicService.deleteTopic(req.params.id);
 
@@ -68,12 +69,12 @@ exports.deleteTopic = async (req, res) => {
 
     res.json({ status: "success", message: "Topic deleted successfully" });
   } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
+    res.status(500).json({ status: "error", message: (error as Error).message });
   }
 };
 
 // 恢復話題
-exports.restoreTopic = async (req, res) => {
+export const restoreTopic = async (req: Request, res: Response): Promise<void> => {
   try {
     const restoredTopic = await topicService.restoreTopic(req.params.id);
 
@@ -92,7 +93,7 @@ exports.restoreTopic = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: "error",
-      message: error.message || "An unexpected error occurred",
+      message: (error as Error).message || "An unexpected error occurred",
     });
   }
 };
