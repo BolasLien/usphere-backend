@@ -1,11 +1,13 @@
-const express = require("express");
-const cors = require("cors");
-const routes = require("./src/routes");
-const logger = require("./src/utils/logger");
+import express, { Request, Response } from "express";
+import cors from "cors";
+import routes from "./src/routes";
+import logger from "./src/utils/logger";
+import dotenv from "dotenv";
+
+dotenv.config();
+
 const app = express();
 const port = 3000;
-
-require("dotenv").config();
 
 // 設定 CORS 中介軟體，允許多個來源
 const allowedOrigins = process.env.ALLOWED_ORIGINS
@@ -13,8 +15,8 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   : [];
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    if (allowedOrigins.indexOf(origin || "") !== -1 || !origin) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
@@ -29,7 +31,6 @@ app.use(express.json());
 app.use(routes);
 
 logger.info("Express app 已經啟動");
-// ...existing code...
 
 app.listen(port, () => {
   console.log(`API server is 執行 on http://localhost:${port}`);
