@@ -6,7 +6,7 @@ exports.getCommentsByTopicId = async (topicId) => {
     .from("comments")
     .select("*, users(display_name,profile_pic_url)")
     .eq("topic_id", topicId)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: false  });
 
   if (error) throw new Error(error.message);
 
