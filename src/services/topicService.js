@@ -2,7 +2,7 @@ const db = require("../utils/db");
 
 // 回傳的欄位
 const TOPIC_FIELDS =
-  "id,title,content,likes,comments,created_at,tags,bookmarks,users:users (display_name,profile_pic_url)";
+  "id,title,content,likes,comments,created_at,tags,bookmarks,users:users (display_name,profile_pic_url),comments(count)";
 
 // 格式化話題資料
 const formatTopic = (topic) => {
@@ -11,6 +11,7 @@ const formatTopic = (topic) => {
     author: topic.users.display_name,
     author_pic: topic.users.profile_pic_url,
     users: undefined, // 移除 users 欄位
+    comments: topic.comments[0].count, // 計算留言數量
   };
 };
 
