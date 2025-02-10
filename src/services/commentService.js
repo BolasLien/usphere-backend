@@ -4,15 +4,16 @@ const db = require("../utils/db");
 exports.getCommentsByTopicId = async (topicId) => {
   const { data, error } = await db
     .from("comments")
-    .select("*, users(display_name,profile_pic_url)")
+    .select("*, users(display_name,profile_pic_url),likes(count)")
     .eq("topic_id", topicId)
-    .order("created_at", { ascending: false  });
+    .order("created_at", { ascending: false });
 
   if (error) throw new Error(error.message);
 
   const comments = data.map((comment) => {
     comment.user_name = comment.users ? comment.users.display_name : "未知用戶";
     comment.user_pic = comment.users ? comment.users.profile_pic_url : "";
+    comment.likes = comment.likes[0].count;
     const { user_id, users, topic_id, created_at, ...data } = comment;
     return data;
   });
@@ -32,19 +33,6 @@ exports.createComment = async (topicId, comment) => {
     .from("comments")
     .insert(comment)
     .select("content,created_at")
-    .single();
-
-  if (error) throw new Error(error.message);
-  return data;
-};
-
-// TODO 對指定留言進行按讚操作，目前只是增加 likes 數量
-exports.likeComment = async (commentId) => {
-  const { data, error } = await db
-    .from("comments")
-    .update({ likes: db.raw("likes + 1") })
-    .eq("id", commentId)
-    .select("*")
     .single();
 
   if (error) throw new Error(error.message);
