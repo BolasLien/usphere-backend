@@ -22,7 +22,7 @@ exports.getAllTopics = async (query) => {
   const offset = (parseInt(page) - 1) * parseInt(limit);
 
   // 構建查詢
-  let dbQuery = db.from("topics").select(TOPIC_FIELDS).eq("is_deleted", false);
+  let dbQuery = db.from("topics_view").select("*");
 
   // 關鍵字過濾
   if (keyword) {
@@ -51,22 +51,21 @@ exports.getAllTopics = async (query) => {
 
   if (error) throw new Error(error.message);
 
-  return data.map(formatTopic);
+  return data;
 };
 
 // 獲取單個話題
 exports.getTopicById = async (id) => {
   const { data, error } = await db
-    .from("topics")
-    .select(TOPIC_FIELDS)
+    .from("topics_view")
+    .select("*")
     .eq("id", id)
-    .eq("is_deleted", false)
     .single();
 
   if (error) throw new Error(error.message);
   if (!data) return null;
 
-  return formatTopic(data);
+  return data;
 };
 
 // 創建新話題
