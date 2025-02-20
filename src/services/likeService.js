@@ -1,11 +1,12 @@
 const db = require("../utils/db");
 
-exports.toggleLike = async (userId, entityId, entityType) => {
+exports.toggleLike = async (userId, entityId, entityType, token) => {
   const { data: existingData, error: findError } = await db
     .from("likes")
     .select("*")
     .eq("user_id", userId)
-    .eq(`${entityType}_id`, entityId);
+    .eq(`${entityType}_id`, entityId)
+    .setHeader("Authorization", `Bearer ${token}`);
 
   // 如果不是找不到資料的錯誤，就拋出錯誤
   if (findError && findError.code !== "PGRST116") {
@@ -17,6 +18,7 @@ exports.toggleLike = async (userId, entityId, entityType) => {
     const { error: deleteError } = await db
       .from("likes")
       .update({ is_liked: !existingData[0].is_liked })
+      .eq("user_id", userId)
       .eq("id", existingData[0].id);
 
     if (deleteError) {
