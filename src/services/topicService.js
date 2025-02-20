@@ -2,7 +2,7 @@ const db = require("../utils/db");
 
 // 回傳的欄位
 const TOPIC_FIELDS =
-  "id,title,content,likes,comments,created_at,tags,bookmarks,users:users (display_name,profile_pic_url),comments(count),likes(count)";
+  "id,title,content,created_at,tags,bookmarks,users:users (display_name,profile_pic_url),comments(count),likes(count)";
 
 // 格式化話題資料
 const formatTopic = (topic) => {
@@ -69,44 +69,44 @@ exports.getTopicById = async (id) => {
 };
 
 // 創建新話題
-exports.createTopic = async (topic) => {
-  // TODO 暫時先給假的資料
-  topic.user_id = "78223638-d195-44ae-8441-76b364eec8e2";
-  topic.likes = 0;
-  topic.comments = 0;
-  topic.bookmarks = 0;
-
+exports.createTopic = async (topic, user, token) => {
   const { data, error } = await db
     .from("topics")
-    .insert(topic)
+    .insert({ ...topic, user_id: user.id }) // 新增話題時要加入 user_id
     .select(TOPIC_FIELDS) // 返回全部資料讓前端使用
-    .single();
+    .single()
+    .setHeader("Authorization", `Bearer ${token}`);
+
   if (error) throw new Error(error.message);
 
   return formatTopic(data);
 };
 
 // 更新話題
-exports.updateTopic = async (id, topic) => {
+exports.updateTopic = async (id, topic, token) => {
   const { data, error } = await db
     .from("topics")
-    .update(topic)
+    .update(topic) // 更新話題時要加入 user_id
     .eq("id", id)
     .select(TOPIC_FIELDS)
-    .single();
+    .maybeSingle()
+    .setHeader("Authorization", `Bearer ${token}`);
+
+  if (!data) throw new Error("沒有編輯此話題的權限");
   if (error) throw new Error(error.message);
 
   return formatTopic(data) || {};
 };
 
 // 刪除話題
-exports.deleteTopic = async (id) => {
+exports.deleteTopic = async (id, token) => {
   const { data, error } = await db
     .from("topics")
     .update({ is_deleted: true, deleted_at: new Date().toISOString() })
     .eq("is_deleted", false)
     .eq("id", id)
-    .select(TOPIC_FIELDS); // 成功更新會返回該資料，失敗的話則是回空陣列
+    .select(TOPIC_FIELDS) // 成功更新會返回該資料，失敗的話則是回空陣列
+    .setHeader("Authorization", `Bearer ${token}`); // 設置 token 才能修改
 
   if (error) {
     console.error("Error delete topic:", error);
@@ -119,13 +119,14 @@ exports.deleteTopic = async (id) => {
 };
 
 // 恢復話題
-exports.restoreTopic = async (id) => {
+exports.restoreTopic = async (id, token) => {
   const { data, error } = await db
     .from("topics")
     .update({ is_deleted: false, deleted_at: null })
     .eq("is_deleted", true) // 確保只恢復已刪除的資料
     .eq("id", id)
-    .select(TOPIC_FIELDS); // 返回更新的資料
+    .select(TOPIC_FIELDS) // 返回更新的資料
+    .setHeader("Authorization", `Bearer ${token}`); // 設置 token 才能修改
 
   if (error) {
     console.error("Error restoring topic:", error);
