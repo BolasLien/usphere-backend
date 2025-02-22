@@ -27,4 +27,12 @@ const loginUser = async (email, password) => {
   };
 };
 
-module.exports = { loginUser };
+const logoutUser = async (access_token) => {
+  const { error } = await supabase.auth.signOut(access_token);
+
+  if (error) {
+    throw { status: 500, message: "登出失敗" };
+  }
+};
+
+module.exports = { loginUser, logoutUser };
