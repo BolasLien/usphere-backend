@@ -2,8 +2,10 @@ const topicService = require("../services/topicService");
 
 // 獲取所有話題
 exports.getAllTopics = async (req, res) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader ? authHeader.split(" ")[1] : null;
   try {
-    const topics = await topicService.getAllTopics(req.query);
+    const topics = await topicService.getAllTopics(req.query, token);
     res.json({ status: "success", data: topics });
   } catch (error) {
     res.status(500).json({ status: "error", message: error.message });
@@ -12,8 +14,13 @@ exports.getAllTopics = async (req, res) => {
 
 // 獲取單個話題
 exports.getTopicById = async (req, res) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader ? authHeader.split(" ")[1] : null;
+
+  const topicId = req.params.id;
+
   try {
-    const topic = await topicService.getTopicById(req.params.id);
+    const topic = await topicService.getTopicById(topicId, token);
     if (!topic) {
       return res
         .status(404)
