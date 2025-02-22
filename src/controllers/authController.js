@@ -12,4 +12,17 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { login };
+const logout = async (req, res) => {
+  try {
+    const token = req.token;
+
+    await authService.logoutUser(token);
+    res.json({ status: "success", message: "登出成功" });
+  } catch (error) {
+    res
+      .status(error.status || 500)
+      .json({ status: "error", message: error.message || "登出失敗" });
+  }
+};
+
+module.exports = { login, logout };
