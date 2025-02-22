@@ -1,3 +1,4 @@
+const { use } = require("../routes/topicRoutes");
 const db = require("../utils/db");
 
 // 回傳的欄位
@@ -17,7 +18,7 @@ const formatTopic = (topic) => {
 };
 
 // 獲取所有話題
-exports.getAllTopics = async (query) => {
+exports.getAllTopics = async (query, token) => {
   const { sort = "newest", keyword, page = 1, limit = 10, tags } = query;
   const offset = (parseInt(page) - 1) * parseInt(limit);
 
@@ -46,6 +47,9 @@ exports.getAllTopics = async (query) => {
   // 分頁處理
   dbQuery = dbQuery.range(offset, offset + parseInt(limit) - 1);
 
+  if (token) {
+    dbQuery = dbQuery.setHeader("Authorization", `Bearer ${token}`);
+  }
   // 執行查詢
   const { data, error } = await dbQuery;
 
@@ -55,12 +59,14 @@ exports.getAllTopics = async (query) => {
 };
 
 // 獲取單個話題
-exports.getTopicById = async (id) => {
-  const { data, error } = await db
-    .from("topics_view")
-    .select("*")
-    .eq("id", id)
-    .single();
+exports.getTopicById = async (id, token) => {
+  let query = db.from("topics_view").select("*").eq("id", id).single();
+
+  if (token) {
+    query = query.setHeader("Authorization", `Bearer ${token}`);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw new Error(error.message);
   if (!data) return null;
