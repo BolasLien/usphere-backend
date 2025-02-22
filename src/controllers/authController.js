@@ -14,8 +14,9 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
-    const { access_token } = req.body;
-    await authService.logoutUser(access_token);
+    const token = req.token;
+
+    await authService.logoutUser(token);
     res.json({ status: "success", message: "登出成功" });
   } catch (error) {
     res

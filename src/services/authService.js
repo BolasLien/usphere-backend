@@ -28,7 +28,7 @@ const loginUser = async (email, password) => {
 };
 
 const logoutUser = async (access_token) => {
-  const { error } = await supabase.auth.signOut(access_token);
+  const { error } = await supabase.auth.admin.signOut(access_token);
 
   if (error) {
     throw { status: 500, message: "登出失敗" };
