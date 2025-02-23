@@ -25,4 +25,17 @@ const logout = async (req, res) => {
   }
 };
 
-module.exports = { login, logout };
+const whoami = async (req, res) => {
+  try {
+    const token = req.token;
+
+    const user = await authService.whoami(token);
+    res.json({ status: "success", message: "取得使用者資訊成功", user });
+  } catch (error) {
+    res
+      .status(error.status || 500)
+      .json({ status: "error", message: error.message || "身份驗證失敗" });
+  }
+};
+
+module.exports = { login, logout, whoami };

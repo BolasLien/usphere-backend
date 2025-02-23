@@ -35,4 +35,24 @@ const logoutUser = async (access_token) => {
   }
 };
 
-module.exports = { loginUser, logoutUser };
+const whoami = async (access_token) => {
+  const { data, error } = await supabase.auth.getUser(access_token);
+
+  if (error) {
+    throw { status: 401, message: "身份驗證失敗" };
+  }
+
+  const user = await userService.getUserById(data.user.id);
+
+  if (!user) {
+    throw { status: 404, message: "使用者資料不存在" };
+  }
+
+  return {
+    id: user.id,
+    name: user.display_name,
+    pic: user.profile_pic_url,
+  };
+};
+
+module.exports = { loginUser, logoutUser, whoami };
