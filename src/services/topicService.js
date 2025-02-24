@@ -1,4 +1,3 @@
-const { use } = require("../routes/topicRoutes");
 const db = require("../utils/db");
 
 // 回傳的欄位
@@ -47,7 +46,9 @@ exports.getAllTopics = async (query, token) => {
   // 分頁處理
   dbQuery = dbQuery.range(offset, offset + parseInt(limit) - 1);
 
-  if (token) {
+  const { error: userError } = await db.auth.getUser(token);
+
+  if (token && !userError) {
     dbQuery = dbQuery.setHeader("Authorization", `Bearer ${token}`);
   }
   // 執行查詢
@@ -62,7 +63,9 @@ exports.getAllTopics = async (query, token) => {
 exports.getTopicById = async (id, token) => {
   let query = db.from("topics_view").select("*").eq("id", id).single();
 
-  if (token) {
+  const { error: userError } = await db.auth.getUser(token);
+
+  if (token && !userError) {
     query = query.setHeader("Authorization", `Bearer ${token}`);
   }
 
