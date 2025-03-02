@@ -26,10 +26,9 @@ const logout = async (req, res) => {
 };
 
 const whoami = async (req, res) => {
+  const userId = req.user.id;
   try {
-    const token = req.token;
-
-    const user = await authService.whoami(token);
+    const user = await authService.whoami(userId);
     res.json({ status: "success", message: "取得使用者資訊成功", user });
   } catch (error) {
     res
