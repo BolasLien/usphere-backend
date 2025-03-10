@@ -54,6 +54,12 @@ exports.getAllTopics = async (query, token) => {
   // 執行查詢
   const { data, error } = await dbQuery;
 
+  if (!token || userError) {
+    data.map((topic) => ({
+      ...topic,
+      can_edit_topics: false,
+    }));
+  }
   if (error) throw new Error(error.message);
 
   return data;
@@ -70,6 +76,10 @@ exports.getTopicById = async (id, token) => {
   }
 
   const { data, error } = await query;
+
+  if (!token || userError) {
+    data.can_edit_topics = false;
+  }
 
   if (error) throw new Error(error.message);
   if (!data) return null;
