@@ -1,6 +1,12 @@
-const db = require("../utils/db");
+import db from "../utils/db";
+import { LikeResponse, Like } from "../types/models";
 
-exports.toggleLike = async (userId, entityId, entityType, token) => {
+export const toggleLike = async (
+  userId: string,
+  entityId: string,
+  entityType: 'topic' | 'comment',
+  token: string | undefined
+): Promise<LikeResponse> => {
   const { data: existingData, error: findError } = await db
     .from("likes")
     .select("*")
@@ -13,7 +19,7 @@ exports.toggleLike = async (userId, entityId, entityType, token) => {
     throw new Error(findError.message);
   }
 
-  if (existingData[0]) {
+  if (existingData && existingData[0]) {
     // 按讚 或 收回讚
     const { error: deleteError } = await db
       .from("likes")
@@ -43,7 +49,7 @@ exports.toggleLike = async (userId, entityId, entityType, token) => {
 };
 
 // 查詢特定 entity_id 的 like 數量
-exports.getLikeCount = async (entityId, entityType) => {
+export const getLikeCount = async (entityId: string, entityType: 'topic' | 'comment'): Promise<number> => {
   const { count, error } = await db
     .from("likes")
     .select("*", { count: "exact", head: true })
@@ -53,5 +59,6 @@ exports.getLikeCount = async (entityId, entityType) => {
   if (error) {
     throw error;
   }
-  return count;
+
+  return count || 0;
 };

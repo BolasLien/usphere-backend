@@ -1,6 +1,7 @@
-const likeService = require("../services/likeService");
+import { Request, Response } from "express";
+import * as likeService from "../services/likeService";
 
-exports.toggleLike = async (req, res) => {
+export const toggleLike = async (req: Request, res: Response) => {
   const userId = req.user.id;
   const token = req.token;
   const { entity_id, entity_type } = req.body;
@@ -21,6 +22,6 @@ exports.toggleLike = async (req, res) => {
       data: { entity_id, likes: updatedLikes },
     });
   } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
+    res.status(500).json({ status: "error", message: (error as Error).message });
   }
 };

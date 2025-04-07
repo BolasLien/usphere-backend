@@ -1,24 +1,24 @@
-const topicService = require("../services/topicService");
+import { Request, Response } from "express";
+import * as topicService from "../services/topicService";
+import { Topic } from "../types/models";
 
 // 獲取所有話題
-exports.getAllTopics = async (req, res) => {
+export const getAllTopics = async (req: Request, res: Response) => {
   const authHeader = req.headers.authorization;
   const token = authHeader ? authHeader.split(" ")[1] : null;
   try {
     const topics = await topicService.getAllTopics(req.query, token);
     res.json({ status: "success", data: topics });
   } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
+    res.status(500).json({ status: "error", message: (error as Error).message });
   }
 };
 
 // 獲取單個話題
-exports.getTopicById = async (req, res) => {
+export const getTopicById = async (req: Request, res: Response) => {
   const authHeader = req.headers.authorization;
   const token = authHeader ? authHeader.split(" ")[1] : null;
-
   const topicId = req.params.id;
-
   try {
     const topic = await topicService.getTopicById(topicId, token);
     if (!topic) {
@@ -28,28 +28,28 @@ exports.getTopicById = async (req, res) => {
     }
     res.json({ status: "success", data: topic });
   } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
+    res.status(500).json({ status: "error", message: (error as Error).message });
   }
 };
 
-// 創建新話題
-exports.createTopic = async (req, res) => {
+// 建立新話題
+export const createTopic = async (req: Request, res: Response) => {
   const token = req.token;
   try {
     const newTopic = await topicService.createTopic(req.body, req.user, token);
     res.status(201).json({ status: "success", data: newTopic });
   } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
+    res.status(500).json({ status: "error", message: (error as Error).message });
   }
 };
 
 // 更新話題
-exports.updateTopic = async (req, res) => {
+export const updateTopic = async (req: Request, res: Response) => {
   const { id } = req.params; // 話題 ID
   const { title, content } = req.body;
   const token = req.token;
 
-  // 1️⃣ 確保 title 或 content 至少有一個要更新
+  // 確保 title 或 content 至少有一個要更新
   if (!title && !content) {
     return res.status(400).json({ error: "標題或內容至少需要修改一項" });
   }
@@ -60,7 +60,6 @@ exports.updateTopic = async (req, res) => {
       { title, content },
       token
     );
-
     if (!updatedTopic) {
       return res
         .status(404)
@@ -68,42 +67,38 @@ exports.updateTopic = async (req, res) => {
     }
     res.json({ status: "success", data: updatedTopic });
   } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
+    res.status(500).json({ status: "error", message: (error as Error).message });
   }
 };
 
 // 刪除話題
-exports.deleteTopic = async (req, res) => {
+export const deleteTopic = async (req: Request, res: Response) => {
   const token = req.token;
   try {
     const deletedTopic = await topicService.deleteTopic(req.params.id, token);
-
     if (!deletedTopic) {
       return res.status(404).json({
         status: "error",
         message: "Topic has already been deleted or does not exist",
       });
     }
-
     res.json({ status: "success", message: "Topic deleted successfully" });
   } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
+    res.status(500).json({ status: "error", message: (error as Error).message });
   }
 };
 
 // 恢復話題
-exports.restoreTopic = async (req, res) => {
+export const restoreTopic = async (req: Request, res: Response) => {
   const token = req.token;
   try {
     const restoredTopic = await topicService.restoreTopic(req.params.id, token);
-
     if (!restoredTopic) {
       return res.status(404).json({
         status: "error",
         message: "Topic not found or not deleted",
       });
     }
-
     res.status(200).json({
       status: "success",
       message: "Topic restored successfully",
@@ -112,7 +107,7 @@ exports.restoreTopic = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: "error",
-      message: error.message || "An unexpected error occurred",
+      message: (error as Error).message || "An unexpected error occurred",
     });
   }
 };
