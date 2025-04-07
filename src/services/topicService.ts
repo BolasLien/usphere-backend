@@ -1,11 +1,12 @@
-const db = require("../utils/db");
+import db from "../utils/db";
+import { Topic, QueryParams } from "../types/models";
 
 // 回傳的欄位
 const TOPIC_FIELDS =
   "id,title,content,created_at,tags,bookmarks,users:users (display_name,profile_pic_url),comments(count),likes(count)";
 
 // 格式化話題資料
-const formatTopic = (topic) => {
+const formatTopic = (topic: any): any => {
   return {
     ...topic,
     author: topic.users.display_name,
@@ -17,9 +18,11 @@ const formatTopic = (topic) => {
 };
 
 // 獲取所有話題
-exports.getAllTopics = async (query, token) => {
+export const getAllTopics = async (query: QueryParams, token: string | null): Promise<any[]> => {
   const { sort = "newest", keyword, page = 1, limit = 10, tags } = query;
-  const offset = (parseInt(page) - 1) * parseInt(limit);
+  const pageNum = typeof page === 'string' ? parseInt(page, 10) : (page as number);
+  const limitNum = typeof limit === 'string' ? parseInt(limit, 10) : (limit as number);
+  const offset = (pageNum - 1) * limitNum;
 
   // 構建查詢
   let dbQuery = db.from("topics_view").select("*");
@@ -44,32 +47,36 @@ exports.getAllTopics = async (query, token) => {
   }
 
   // 分頁處理
-  dbQuery = dbQuery.range(offset, offset + parseInt(limit) - 1);
+  dbQuery = dbQuery.range(offset, offset + limitNum - 1);
 
-  const { error: userError } = await db.auth.getUser(token);
+  const { error: userError } = await db.auth.getUser(token || "");
 
   if (token && !userError) {
     dbQuery = dbQuery.setHeader("Authorization", `Bearer ${token}`);
   }
+
   // 執行查詢
   const { data, error } = await dbQuery;
 
+  if (error) {
+    throw new Error(typeof error.message === 'string' ? error.message : '獲取主題失敗');
+  }
+
   if (!token || userError) {
-    data.map((topic) => ({
+    return data.map((topic: any) => ({
       ...topic,
       can_edit_topics: false,
     }));
   }
-  if (error) throw new Error(error.message);
 
   return data;
 };
 
 // 獲取單個話題
-exports.getTopicById = async (id, token) => {
+export const getTopicById = async (id: string, token: string | null): Promise<any | null> => {
   let query = db.from("topics_view").select("*").eq("id", id).single();
 
-  const { error: userError } = await db.auth.getUser(token);
+  const { error: userError } = await db.auth.getUser(token || "");
 
   if (token && !userError) {
     query = query.setHeader("Authorization", `Bearer ${token}`);
@@ -77,18 +84,24 @@ exports.getTopicById = async (id, token) => {
 
   const { data, error } = await query;
 
-  if (!token || userError) {
-    data.can_edit_topics = false;
+  if (error) {
+    throw new Error(typeof error.message === 'string' ? error.message : '獲取主題失敗');
   }
 
-  if (error) throw new Error(error.message);
   if (!data) return null;
+
+  if (!token || userError) {
+    return {
+      ...data,
+      can_edit_topics: false
+    };
+  }
 
   return data;
 };
 
-// 創建新話題
-exports.createTopic = async (topic, user, token) => {
+// 建立新話題
+export const createTopic = async (topic: Partial<Topic>, user: any, token: string | undefined): Promise<any> => {
   const { data, error } = await db
     .from("topics")
     .insert({ ...topic, user_id: user.id }) // 新增話題時要加入 user_id
@@ -96,29 +109,34 @@ exports.createTopic = async (topic, user, token) => {
     .single()
     .setHeader("Authorization", `Bearer ${token}`);
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new Error(typeof error.message === 'string' ? error.message : '建立主題失敗');
+  }
 
   return formatTopic(data);
 };
 
 // 更新話題
-exports.updateTopic = async (id, topic, token) => {
+export const updateTopic = async (id: string, topic: Partial<Topic>, token: string | undefined): Promise<any> => {
   const { data, error } = await db
     .from("topics")
-    .update(topic) // 更新話題時要加入 user_id
+    .update(topic)
     .eq("id", id)
     .select(TOPIC_FIELDS)
     .maybeSingle()
     .setHeader("Authorization", `Bearer ${token}`);
 
   if (!data) throw new Error("沒有編輯此話題的權限");
-  if (error) throw new Error(error.message);
+
+  if (error) {
+    throw new Error(typeof error.message === 'string' ? error.message : '更新主題失敗');
+  }
 
   return formatTopic(data) || {};
 };
 
 // 刪除話題
-exports.deleteTopic = async (id, token) => {
+export const deleteTopic = async (id: string, token: string | undefined): Promise<any[] | null> => {
   const { data, error } = await db
     .from("topics")
     .update({ is_deleted: true, deleted_at: new Date().toISOString() })
@@ -129,7 +147,7 @@ exports.deleteTopic = async (id, token) => {
 
   if (error) {
     console.error("Error delete topic:", error);
-    throw new Error("Failed to delete topic: " + error.message);
+    throw new Error(typeof error.message === 'string' ? error.message : '刪除主題失敗');
   }
 
   if (!data || data.length === 0) return null;
@@ -138,7 +156,7 @@ exports.deleteTopic = async (id, token) => {
 };
 
 // 恢復話題
-exports.restoreTopic = async (id, token) => {
+export const restoreTopic = async (id: string, token: string | undefined): Promise<any[] | null> => {
   const { data, error } = await db
     .from("topics")
     .update({ is_deleted: false, deleted_at: null })
@@ -149,7 +167,7 @@ exports.restoreTopic = async (id, token) => {
 
   if (error) {
     console.error("Error restoring topic:", error);
-    throw new Error("Failed to restore topic: " + error.message);
+    throw new Error(typeof error.message === 'string' ? error.message : '恢復主題失敗');
   }
 
   if (!data || data.length === 0) return null;

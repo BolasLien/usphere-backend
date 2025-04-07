@@ -1,7 +1,8 @@
-const commentService = require("../services/commentService");
+import { Request, Response } from "express";
+import * as commentService from "../services/commentService";
 
 // 獲取指定話題下的所有留言
-exports.getCommentsByTopicId = async (req, res) => {
+export const getCommentsByTopicId = async (req: Request, res: Response) => {
   try {
     const comments = await commentService.getCommentsByTopicId(req.params.id);
     res.json({
@@ -10,12 +11,12 @@ exports.getCommentsByTopicId = async (req, res) => {
       data: comments,
     });
   } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
+    res.status(500).json({ status: "error", message: (error as Error).message });
   }
 };
 
 // 在指定話題下發表新留言
-exports.createComment = async (req, res) => {
+export const createComment = async (req: Request, res: Response) => {
   const topicId = req.params.id;
   const comment = req.body;
   const user = req.user;
@@ -33,6 +34,6 @@ exports.createComment = async (req, res) => {
       .status(201)
       .json({ status: "success", message: "留言成功", data: newComment });
   } catch (error) {
-    res.status(500).json({ status: "error", message: error.message });
+    res.status(500).json({ status: "error", message: (error as Error).message });
   }
 };
