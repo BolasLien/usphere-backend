@@ -55,10 +55,15 @@ exports.getAllTopics = async (query, token) => {
   const { data, error } = await dbQuery;
 
   if (!token || userError) {
-    data.map((topic) => ({
+    // `map` returns a new array but the result wasn't used, leaving
+    // `can_edit_topics` unchanged. Assign the mapped array so callers
+    // receive the modified topics list.
+    const topics = (data || []).map((topic) => ({
       ...topic,
       can_edit_topics: false,
     }));
+    if (error) throw new Error(error.message);
+    return topics;
   }
   if (error) throw new Error(error.message);
 
