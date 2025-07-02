@@ -43,10 +43,10 @@ export interface LikeResponse {
 }
 
 export interface QueryParams {
-  limit?: number;
-  offset?: number;
-  order?: string;
+  page?: number | string;
+  limit?: number | string;
+  keyword?: string;
+  tags?: string | string[];
   sort?: string;
-  search?: string;
   [key: string]: any;
 }
